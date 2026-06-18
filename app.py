@@ -279,4 +279,118 @@ if user_input := st.chat_input("Enter your premium legal query here..."):
                 
         except Exception as e:
             response_placeholder.markdown(f"⚠️ Generation Error: Engine computation timeout. Details: {str(e)}")
-```
+
+
+#
+
+ 
+
+# 4. BACKGROUND VAULT KEY EXTRACTION FOR AI ARCHITECTURE
+# 
+
+try:
+    groq_api_key = st.secrets["GROQ_API_KEY"]
+    ai_client = Groq(api_key=groq_api_key)
+except Exception:
+    st.error("System Status: Security Vault Keys Missing. Please check your system settings.")
+    st.stop()
+
+# 
+
+# 5. USER SEGMENTATION & ACCESS GATE (PERMANENT SECRETS LOOKUP)
+# 
+
+if st.session_state.logged_in_user is None:
+    st.subheader("🔐 Secure User Portal")
+    
+    st.markdown("### Secure Login")
+    login_username = st.text_input("Username / Email:").strip()
+    login_password = st.text_input("Password:", type="password").strip()
+    
+    if st.button("Log In 🔓"):
+        if db_df.empty:
+            st.error("No registered accounts configured in the system.")
+        else:
+            # Match credentials directly against your Streamlit Secrets database
+            matched_user = db_df[(db_df['username'].astype(str) == login_username) & (db_df['password'].astype(str) == login_password)]
+            
+            if not matched_user.empty:
+                st.session_state.logged_in_user = login_username
+                trigger_admin_alert("User Logged In Successfully", login_username)
+                st.success(f"Access Granted. Welcome back, {login_username}!")
+                st.rerun()
+            else:
+                st.error("Invalid username or password credentials.")
+                
+    st.stop()
+
+# 
+
+# 6. APP CONTENT AREA (UNLOCKED UPON SUCCESSFUL LOGIN)
+# 
+
+current_user = st.session_state.logged_in_user
+
+# Extract user profile state directly from records to check payment status
+user_row = db_df[db_df['username'].astype(str) == current_user]
+user_status = user_row['status'].values[0] if not user_row.empty else "Free Trial"
+
+is_premium_user = (user_status == "Premium")
+
+# Grant 5 full initial testing queries gracefully to your fresh testers
+if not is_premium_user and st.session_state.free_queries_used >= 5:
+    st.error(f"🛑 Account Status: Subscription Expired for user [{current_user}]. Premium Access Required.")
+    st.markdown("### 🌎 Select Your Jurisdiction & Calculate Rate")
+    region = st.radio("Where are you currently practicing law?", ["Select Region...", "Within Africa ($100/mo)", "International (Outside Africa) ($200/mo)"])
+    
+    if region != "Select Region...":
+        st.info(f"Payment Processing Interface Initiated for {region}. Please contact Admin to whitelist profile.")
+    st.stop()
+
+# Profile Tier Metadata Banner
+st.sidebar.markdown(f"👤 **Active Profile:** `{current_user}`")
+st.sidebar.markdown(f"💼 **Account Tier:** `{user_status.upper()}`")
+if not is_premium_user:
+    st.sidebar.markdown(f"📊 **Free Evaluation Inquiries Remaining:** `{5 - st.session_state.free_queries_used}`")
+
+if st.sidebar.button("Log Out 🚪"):
+    st.session_state.logged_in_user = None
+    st.rerun()
+
+# Display ongoing interaction history layout UI frames
+for chat in st.session_state.chat_history:
+    with st.chat_message(chat["role"]):
+        st.markdown(chat["content"])
+
+# Chat Interface Logic Block
+if user_input := st.chat_input("Enter your premium legal query here..."):
+    st.session_state.chat_history.append({"role": "user", "content": user_input})
+    with st.chat_message("user"):
+        st.markdown(user_input)
+        
+    with st.chat_message("assistant"):
+        response_placeholder = st.empty()
+        response_placeholder.markdown("🔍 *Analyzing system matrix and compiling legal brief...*")
+        
+        try:
+            chat_completion = ai_client.chat.completions.create(
+                messages=[
+                    {"role": "system", "content": "You are the premium Law of Africa Intelligence Engine, an elite expert AI trained in African legal frameworks, constitutional architectures, statutory interpretations, case law history, and commercial OHADA guidelines. Provide exhaustive, structured legal briefs with clear sections."},
+                    {"role": "user", "content": user_input}
+                ],
+                model="llama3-8b-8192",
+            )
+            ai_response = chat_completion.choices[0].message.content
+            response_placeholder.markdown(ai_response)
+            st.session_state.chat_history.append({"role": "assistant", "content": ai_response})
+            
+            if not is_premium_user:
+                st.session_state.free_queries_used += 1
+                
+        except Exception as e:
+            response_placeholder.markdown(f"⚠️ Generation Error: Engine computation timeout. Details: {str(e)}")
+
+
+
+
+### 
