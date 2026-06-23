@@ -52,7 +52,7 @@ st.markdown("""
 # Main Structural Titles - Optimized for Google/Safari indexing
 st.title("LAW OF AFRICA INTELLIGENCE ENGINE")
 st.write("### Welcome to the Official LAW OF AFRICA INTELLIGENCE ENGINE Portal")
-st.write("#### *Premium Pan-African Legal Matrix, OHADA Law Brief Generator, and Constitutional History Index.*")
+st.write("#### *Premium Pan-African Legal AI Matrix, OHADA Law Brief Generator, and Constitutional History Index.*")
 st.success("⚡ **Stop spending 10 hours researching OHADA law. Get a comprehensive, highly accurate legal brief in 10 seconds.**")
 
 with st.expander("🛡️ Data Privacy, Confidentiality & Compliance Framework"):
@@ -103,8 +103,9 @@ except Exception as e:
     st.stop()
 
 # PERSISTENT SESSION TRACKING & LOGIN REMEMBER LAYER
+# FIX: Updated to use the clean modern stable st.query_params library call
 if "logged_in_user" not in st.session_state:
-    st.session_state.logged_in_user = st.experimental_get_query_params().get("user", [None])[0]
+    st.session_state.logged_in_user = st.query_params.get("user", None)
 if "free_queries_used" not in st.session_state:
     st.session_state.free_queries_used = 0
 if "chat_history" not in st.session_state:
@@ -139,7 +140,7 @@ if st.session_state.logged_in_user is None:
             if not matched_user.empty:
                 st.session_state.logged_in_user = login_username
                 if remember_me:
-                    st.experimental_set_query_params(user=login_username)
+                    st.query_params["user"] = login_username
                 trigger_admin_alert("User Logged In Successfully", login_username)
                 st.success(f"Access Granted. Welcome back, {login_username}!")
                 st.rerun()
@@ -176,7 +177,7 @@ if not is_premium_user and st.session_state.free_queries_used >= MAX_FREE_QUERIE
         st.link_button("🟢 Text Admin on WhatsApp to Pay", whatsapp_pay_url)
     
     if st.button("Log Out 🚪", use_container_width=True):
-        st.experimental_set_query_params()
+        st.query_params.clear()
         st.session_state.logged_in_user = None
         st.rerun()
     st.stop()
@@ -196,16 +197,15 @@ st.sidebar.link_button("✉️ Send Support Email", f"mailto:{ADMIN_EMAIL_ADDRES
 
 st.sidebar.markdown("---")
 if st.sidebar.button("Log Out 🚪", use_container_width=True):
-    st.experimental_set_query_params()
+    st.query_params.clear()
     st.session_state.logged_in_user = None
     st.rerun()
 
 if st.sidebar.button("Reset Application Memory 🔄", use_container_width=True):
-    st.experimental_set_query_params()
+    st.query_params.clear()
     st.session_state.clear()
     st.rerun()
 
-# Display ongoing interaction history without the default icons
 for chat in st.session_state.chat_history:
     with st.chat_message(chat["role"], avatar="⚖️" if chat["role"] == "assistant" else "👤"):
         st.markdown(chat["content"])
@@ -236,7 +236,6 @@ if submit_button and user_input.strip() != "":
         response_placeholder.markdown("🔍 *Analyzing system matrix and compiling response...*")
         
         try:
-            # FIX: Corrected model string spelling to llama-3.3-70b-versatile
             chat_completion = ai_client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
                 messages=[
