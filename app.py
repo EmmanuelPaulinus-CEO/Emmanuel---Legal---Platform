@@ -5,7 +5,7 @@
 # 1. HARDENED ENTERPRISE CONFIGURATION & SECURE IDENTITY
 # 
 
-st.set_page_config(page_title= "Law of Africa page_icon="⚖️", layout="vertical")
+st.set_page_config(page_title= "Law of Africa page_icon="", layout="vertical")
 
 st.title("Law of Africa: Intelligence Engine")
 st.success("⚡ **Stop spending 10 hours researching OHADA law. Get a comprehensive, highly accurate legal brief in 10 seconds.**")
@@ -26,7 +26,7 @@ def trigger_admin_alert(event_type, target_user):
         msg = MIMEMultipart()
         msg['From'] = system_sender
         msg['To'] = admin_recipient
-        msg['Subject'] = f"⚖️ Law of Africa Alert: {event_type}"
+        msg['Subject'] = f" Law of Africa Alert: {event_type}"
         
         body_content = f
          
