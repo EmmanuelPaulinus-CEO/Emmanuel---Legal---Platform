@@ -16,6 +16,7 @@ st.success("⚡ **Stop spending 10 hours researching OHADA law. Get a comprehens
 st.divider()
 
 # 2. EMAIL NOTIFICATION ALERTS ENGINE (SMTP ENTERPRISE GATEWAY)
+#
 def trigger_admin_alert(event_type, target_user):
     # Sends robust, formatted security notification email straight to your phone. 
     try:
@@ -41,6 +42,16 @@ def trigger_admin_alert(event_type, target_user):
         
         
         msg.attach(MIMEText(body_content, 'plain'))
+        
+        server = smtplib.SMTP('smtp.gmail.com', 587)
+        server.starttls()
+        server.login(system_sender, system_password)
+        server.sendmail(system_sender, admin_recipient, msg.as_string())
+        server.quit()
+    except Exception:
+        pass
+
+#
         
         server = smtplib.SMTP('smtp.gmail.com', 587)
         server.starttls()
